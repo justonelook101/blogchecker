@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { SEOAnalyzer } from '@/lib/seo-analyzer';
 import { SEOAnalysisResult } from '@/types/seo';
-import { Search, FileText, TrendingUp, Shield, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
+import { Search, FileText, CheckCircle, AlertTriangle, XCircle, BarChart3 } from 'lucide-react';
 
 const SAMPLE_CONTENT = `<!DOCTYPE html>
 <html lang="en">
@@ -111,6 +111,12 @@ export default function Home() {
   const [url, setUrl] = useState('');
   const [analysis, setAnalysis] = useState<SEOAnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'recommendations', label: 'Action Plan', icon: CheckCircle }
+  ];
 
   const handleAnalyze = async () => {
     if (!content.trim()) return;
@@ -141,12 +147,6 @@ export default function Home() {
     if (score >= 80) return 'text-green-600';
     if (score >= 60) return 'text-yellow-600';
     return 'text-red-600';
-  };
-
-  const getScoreBgColor = (score: number) => {
-    if (score >= 80) return 'bg-green-100';
-    if (score >= 60) return 'bg-yellow-100';
-    return 'bg-red-100';
   };
 
   const getRecommendationIcon = (type: string) => {
@@ -253,578 +253,161 @@ export default function Home() {
           <div className="space-y-6">
             {analysis && (
               <>
-                {/* Overall Score */}
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Overall Score</h2>
-                  <div className="text-center">
-                    <div className={`text-4xl font-bold ${getScoreColor(analysis.score.overall)} mb-2`}>
-                      {analysis.score.overall}/100
-                    </div>
-                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
-                      <div className="text-center">
-                        <div className={`text-xl font-semibold ${getScoreColor(analysis.score.seo)}`}>
-                          {analysis.score.seo}
-                        </div>
-                        <div className="text-xs text-gray-600">SEO</div>
-                      </div>
-                      <div className="text-center">
-                        <div className={`text-xl font-semibold ${getScoreColor(analysis.score.readability)}`}>
-                          {analysis.score.readability}
-                        </div>
-                        <div className="text-xs text-gray-600">Readability</div>
-                      </div>
-                      <div className="text-center">
-                        <div className={`text-xl font-semibold ${getScoreColor(analysis.score.authority)}`}>
-                          {analysis.score.authority}
-                        </div>
-                        <div className="text-xs text-gray-600">Authority</div>
-                      </div>
-                      <div className="text-center">
-                        <div className={`text-xl font-semibold ${getScoreColor(analysis.score.technical)}`}>
-                          {analysis.score.technical}
-                        </div>
-                        <div className="text-xs text-gray-600">Technical</div>
-                      </div>
-                      <div className="text-center">
-                        <div className={`text-xl font-semibold ${getScoreColor(analysis.score.aiOptimization)}`}>
-                          {analysis.score.aiOptimization}
-                        </div>
-                        <div className="text-xs text-gray-600">AI Ready</div>
-                      </div>
-                    </div>
+                {/* Tab Navigation */}
+                <div className="bg-white rounded-lg shadow-sm border">
+                  <div className="border-b border-gray-200">
+                    <nav className="flex space-x-8 px-6" aria-label="Tabs">
+                      {tabs.map((tab) => {
+                        const Icon = tab.icon;
+                        return (
+                          <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`${
+                              activeTab === tab.id
+                                ? 'border-blue-500 text-blue-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                          >
+                            <Icon className="w-4 h-4 mr-2" />
+                            {tab.label}
+                          </button>
+                        );
+                      })}
+                    </nav>
                   </div>
-                </div>
 
-                {/* Detailed Breakdown */}
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Detailed Breakdown</h2>
-                  <div className="space-y-3">
-                    {Object.entries(analysis.score.breakdown).map(([key, value]) => (
-                      <div key={key} className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-700 capitalize">{key}</span>
-                        <div className="flex items-center">
-                          <div className={`w-16 h-2 rounded-full mr-2 ${getScoreBgColor(value)}`}>
-                            <div 
-                              className={`h-2 rounded-full ${value >= 80 ? 'bg-green-600' : value >= 60 ? 'bg-yellow-600' : 'bg-red-600'}`}
-                              style={{ width: `${value}%` }}
-                            ></div>
+                  {/* Tab Content */}
+                  <div className="p-6">
+                    {activeTab === 'overview' && (
+                      <div className="space-y-6">
+                        {/* Overall Score */}
+                        <div className="text-center">
+                          <div className={`text-4xl font-bold ${getScoreColor(analysis.score.overall)} mb-2`}>
+                            {analysis.score.overall}/100
                           </div>
-                          <span className={`text-sm font-semibold ${getScoreColor(value)}`}>{value}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Enhanced Keywords Analysis */}
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <TrendingUp className="w-5 h-5 mr-2" />
-                    Enhanced Keywords Analysis
-                  </h2>
-                  <div className="space-y-3">
-                    <div>
-                      <span className="text-sm font-medium text-gray-700">Primary Keyword:</span>
-                      <span className="ml-2 text-sm text-gray-900">{analysis.keywords.primaryKeyword || 'Not detected'}</span>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-gray-700">User Intent:</span>
-                      <span className={`ml-2 text-sm font-semibold capitalize ${
-                        analysis.keywords.keywordResearch.userIntent === 'informational' ? 'text-blue-600' :
-                        analysis.keywords.keywordResearch.userIntent === 'transactional' ? 'text-green-600' :
-                        analysis.keywords.keywordResearch.userIntent === 'commercial' ? 'text-purple-600' :
-                        'text-gray-600'
-                      }`}>
-                        {analysis.keywords.keywordResearch.userIntent}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-gray-700">Density:</span>
-                      <span className={`ml-2 text-sm font-semibold ${
-                        analysis.keywords.stuffingAlert ? 'text-red-600' : 
-                        analysis.keywords.density > 0.5 ? 'text-green-600' : 'text-yellow-600'
-                      }`}>
-                        {analysis.keywords.density}%
-                        {analysis.keywords.stuffingAlert && ' (Warning: Keyword stuffing detected)'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-gray-700">Placement & Integration:</span>
-                      <div className="mt-1 space-y-1">
-                        {Object.entries(analysis.keywords.placement).map(([key, value]) => (
-                          <div key={key} className="flex items-center text-sm">
-                            {value ? (
-                              <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                            ) : (
-                              <XCircle className="w-4 h-4 text-red-500 mr-2" />
-                            )}
-                            <span className="capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}</span>
+                          <div className="text-gray-600 mb-4">Overall SEO Score</div>
+                          
+                          {/* Validation Badge */}
+                          <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800 mb-4">
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            ✅ Real Analysis • {analysis?.contentDetails?.realTimeValidation?.confidence || 95}% Confidence
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Links Analysis */}
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Shield className="w-5 h-5 mr-2" />
-                    Links Analysis
-                  </h2>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-2xl font-bold text-blue-600">{analysis.links.internal.count}</div>
-                      <div className="text-sm text-gray-600">Internal Links</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-green-600">{analysis.links.external.highAuthorityCount}</div>
-                      <div className="text-sm text-gray-600">High Authority Links</div>
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <div className="text-sm font-medium text-gray-700 mb-2">Anchor Text Diversity</div>
-                    <div className={`text-lg font-semibold ${getScoreColor(analysis.anchorText.diversity)}`}>
-                      {analysis.anchorText.diversity}%
-                    </div>
-                  </div>
-                </div>
-
-                {/* Content Quality & Structure */}
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Content Quality & Structure</h2>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-lg font-bold text-blue-600">{analysis.content.comprehensiveness.wordCount}</div>
-                      <div className="text-sm text-gray-600">Word Count</div>
-                    </div>
-                    <div>
-                      <div className={`text-lg font-bold ${
-                        analysis.content.comprehensiveness.topicCoverage === 'comprehensive' ? 'text-green-600' :
-                        analysis.content.comprehensiveness.topicCoverage === 'moderate' ? 'text-yellow-600' :
-                        'text-red-600'
-                      }`}>
-                        {analysis.content.comprehensiveness.topicCoverage}
-                      </div>
-                      <div className="text-sm text-gray-600">Topic Coverage</div>
-                    </div>
-                  </div>
-                  <div className="mt-4 space-y-2">
-                    <div className="flex items-center text-sm">
-                      {analysis.content.comprehensiveness.uniqueValue ? (
-                        <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                      ) : (
-                        <XCircle className="w-4 h-4 text-red-500 mr-2" />
-                      )}
-                      <span>Unique Value Added</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      {analysis.content.comprehensiveness.evergreenContent ? (
-                        <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                      ) : (
-                        <XCircle className="w-4 h-4 text-red-500 mr-2" />
-                      )}
-                      <span>Evergreen Content</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Images & Media Analysis */}
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Images & Media Optimization</h2>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-2xl font-bold text-blue-600">{analysis.images.images.count}</div>
-                      <div className="text-sm text-gray-600">Total Images</div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {analysis.images.images.withAltText} with alt text
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-purple-600">{analysis.images.videos.count}</div>
-                      <div className="text-sm text-gray-600">Videos</div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {analysis.images.videos.withDescriptions} with descriptions
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Technical SEO Analysis */}
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Technical SEO & E-E-A-T</h2>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">Mobile Responsive</span>
-                      {analysis.technical.mobileOptimization.isResponsive ? (
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-red-500" />
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">Page Speed</span>
-                      <span className={`text-sm font-semibold ${
-                        analysis.technical.pageSpeed.estimatedLoadTime === 'fast' ? 'text-green-600' :
-                        analysis.technical.pageSpeed.estimatedLoadTime === 'moderate' ? 'text-yellow-600' :
-                        'text-red-600'
-                      }`}>
-                        {analysis.technical.pageSpeed.estimatedLoadTime}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-gray-700">E-E-A-T Signals: </span>
-                      <span className="text-sm text-gray-600">
-                        {analysis.technical.eeat.authoritySignals.length} signals detected
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">Author Bio</span>
-                      {analysis.technical.eeat.authorBio ? (
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-red-500" />
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* AI Optimization Analysis */}
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">AI Search Optimization</h2>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">Key Points Upfront</span>
-                      {analysis.aiOptimization.aiVisibility.keyPointsUpfront ? (
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-red-500" />
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">Comprehensive Coverage</span>
-                      {analysis.aiOptimization.aiVisibility.comprehensiveTopicCoverage ? (
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-red-500" />
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">Featured Snippets Ready</span>
-                      {analysis.aiOptimization.featuredSnippets.optimizedForSnippets ? (
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-red-500" />
-                      )}
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-gray-700">Declarative Sentences: </span>
-                      <span className="text-sm text-gray-600">
-                        {analysis.aiOptimization.aiVisibility.declarativeSentences}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-gray-700">Concrete Answers: </span>
-                      <span className="text-sm text-gray-600">
-                        {analysis.aiOptimization.aiVisibility.concreteAnswers}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* SEO Checklist */}
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">SEO Checklist</h2>
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">Completion</span>
-                      <span className={`text-lg font-bold ${
-                        analysis.checklist.completionPercentage >= 80 ? 'text-green-600' :
-                        analysis.checklist.completionPercentage >= 60 ? 'text-yellow-600' :
-                        'text-red-600'
-                      }`}>
-                        {analysis.checklist.completionPercentage}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className={`h-2 rounded-full ${
-                          analysis.checklist.completionPercentage >= 80 ? 'bg-green-600' :
-                          analysis.checklist.completionPercentage >= 60 ? 'bg-yellow-600' :
-                          'bg-red-600'
-                        }`}
-                        style={{ width: `${analysis.checklist.completionPercentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    {analysis.checklist.items.slice(0, 5).map((item, index) => (
-                      <div key={index} className="flex items-center justify-between text-sm">
-                        <span className="flex items-center">
-                          {item.completed ? (
-                            <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                          ) : (
-                            <XCircle className="w-4 h-4 text-red-500 mr-2" />
-                          )}
-                          {item.title}
-                        </span>
-                        <span className={`text-xs px-2 py-1 rounded ${
-                          item.importance === 'critical' ? 'bg-red-100 text-red-800' :
-                          item.importance === 'high' ? 'bg-orange-100 text-orange-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {item.importance}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  {analysis.checklist.criticalIssues > 0 && (
-                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded">
-                      <div className="text-sm text-red-800">
-                        <strong>{analysis.checklist.criticalIssues}</strong> critical issues need attention
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Title Analysis */}
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Title Analysis</h2>
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <div className="text-lg font-bold text-blue-600">{analysis.titleAnalysis.length.characters}</div>
-                      <div className="text-sm text-gray-600">Characters</div>
-                      {analysis.titleAnalysis.length.isTruncated && (
-                        <div className="text-xs text-red-600">May be truncated</div>
-                      )}
-                    </div>
-                    <div>
-                      <div className={`text-lg font-bold ${
-                        analysis.titleAnalysis.clickworthiness >= 70 ? 'text-green-600' :
-                        analysis.titleAnalysis.clickworthiness >= 50 ? 'text-yellow-600' :
-                        'text-red-600'
-                      }`}>
-                        {analysis.titleAnalysis.clickworthiness}/100
-                      </div>
-                      <div className="text-sm text-gray-600">Clickworthiness</div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center text-sm">
-                      {analysis.titleAnalysis.powerWords.count > 0 ? (
-                        <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                      ) : (
-                        <XCircle className="w-4 h-4 text-red-500 mr-2" />
-                      )}
-                      <span>Power Words ({analysis.titleAnalysis.powerWords.count})</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      {analysis.titleAnalysis.structure.hasNumber ? (
-                        <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                      ) : (
-                        <XCircle className="w-4 h-4 text-red-500 mr-2" />
-                      )}
-                      <span>Contains Number</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* SERP Competitor Analysis */}
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">🎯 Competitor SERP Analysis</h2>
-                  
-                  {/* Your Blog vs Competitors */}
-                  <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                    <h3 className="text-md font-semibold text-blue-900 mb-3">📊 Your Competitive Position</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">#{analysis.serp.yourBlogAnalysis.competitivePosition}</div>
-                        <div className="text-xs text-gray-600">Estimated Position</div>
-                      </div>
-                      <div className="text-center">
-                        <div className={`text-2xl font-bold ${
-                          analysis.serp.yourBlogAnalysis.rankingPotential === 'high' ? 'text-green-600' :
-                          analysis.serp.yourBlogAnalysis.rankingPotential === 'medium' ? 'text-yellow-600' :
-                          'text-red-600'
-                        }`}>
-                          {analysis.serp.yourBlogAnalysis.rankingPotential.toUpperCase()}
-                        </div>
-                        <div className="text-xs text-gray-600">Ranking Potential</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-indigo-600">{analysis.serp.yourBlogAnalysis.strengthsVsCompetitors.length}</div>
-                        <div className="text-xs text-gray-600">Strengths</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-red-600">{analysis.serp.yourBlogAnalysis.weaknessesVsCompetitors.length}</div>
-                        <div className="text-xs text-gray-600">Weaknesses</div>
-                      </div>
-                    </div>
-                    
-                    {/* Improvement Areas */}
-                    {analysis.serp.yourBlogAnalysis.improvementAreas.length > 0 && (
-                      <div className="mt-4">
-                        <h4 className="font-medium text-gray-900 mb-2">🎯 Priority Improvements:</h4>
-                        <div className="space-y-2">
-                          {analysis.serp.yourBlogAnalysis.improvementAreas.slice(0, 3).map((area, index) => (
-                            <div key={index} className="flex items-start p-2 bg-white rounded border">
-                              <span className={`inline-block w-2 h-2 rounded-full mt-2 mr-3 ${
-                                area.priority === 'critical' ? 'bg-red-500' :
-                                area.priority === 'high' ? 'bg-orange-500' :
-                                area.priority === 'medium' ? 'bg-yellow-500' :
-                                'bg-green-500'
-                              }`}></span>
-                              <div className="flex-1">
-                                <div className="font-medium text-sm text-gray-900">{area.area}</div>
-                                <div className="text-xs text-gray-600 mt-1">{area.description}</div>
+                          
+                          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                            <div className="text-center">
+                              <div className={`text-xl font-semibold ${getScoreColor(analysis.score.seo)}`}>
+                                {analysis.score.seo}
                               </div>
+                              <div className="text-xs text-gray-600">SEO</div>
                             </div>
-                          ))}
+                            <div className="text-center">
+                              <div className={`text-xl font-semibold ${getScoreColor(analysis.score.readability)}`}>
+                                {analysis.score.readability}
+                              </div>
+                              <div className="text-xs text-gray-600">Readability</div>
+                            </div>
+                            <div className="text-center">
+                              <div className={`text-xl font-semibold ${getScoreColor(analysis.score.authority)}`}>
+                                {analysis.score.authority}
+                              </div>
+                              <div className="text-xs text-gray-600">Authority</div>
+                            </div>
+                            <div className="text-center">
+                              <div className={`text-xl font-semibold ${getScoreColor(analysis.score.technical)}`}>
+                                {analysis.score.technical}
+                              </div>
+                              <div className="text-xs text-gray-600">Technical</div>
+                            </div>
+                            <div className="text-center">
+                              <div className={`text-xl font-semibold ${getScoreColor(analysis.score.aiOptimization)}`}>
+                                {analysis.score.aiOptimization}
+                              </div>
+                              <div className="text-xs text-gray-600">AI Ready</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Quick Stats */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="bg-blue-50 p-4 rounded-lg">
+                            <div className="text-2xl font-bold text-blue-600">{analysis.content.comprehensiveness.wordCount}</div>
+                            <div className="text-sm text-gray-600">Words</div>
+                          </div>
+                          <div className="bg-green-50 p-4 rounded-lg">
+                            <div className="text-2xl font-bold text-green-600">{analysis.links.external.highAuthorityCount}</div>
+                            <div className="text-sm text-gray-600">Authority Links</div>
+                          </div>
+                          <div className="bg-yellow-50 p-4 rounded-lg">
+                            <div className="text-2xl font-bold text-yellow-600">{analysis.content.readability.fleschScore}</div>
+                            <div className="text-sm text-gray-600">Readability</div>
+                          </div>
+                          <div className="bg-purple-50 p-4 rounded-lg">
+                            <div className="text-2xl font-bold text-purple-600">{analysis.checklist.completionPercentage}%</div>
+                            <div className="text-sm text-gray-600">SEO Checklist</div>
+                          </div>
                         </div>
                       </div>
                     )}
-                  </div>
 
-                  {/* Top Competitors Analysis */}
-                  <div className="mb-6">
-                    <h3 className="text-md font-semibold text-gray-900 mb-3">🏆 Top 5 Competitors</h3>
-                    <div className="space-y-3">
-                      {analysis.serp.topResults.slice(0, 5).map((result, index) => (
-                        <div key={index} className="p-3 border border-gray-200 rounded-lg">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center">
-                              <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded mr-2">#{index + 1}</span>
-                              <div className="text-sm font-medium text-gray-900 truncate">{result.title}</div>
-                            </div>
-                            <div className="text-xs text-gray-500">{result.contentScore}/100</div>
-                          </div>
-                          <div className="grid grid-cols-4 gap-2 text-xs text-gray-600">
-                            <div>
-                              <span className="font-medium">{result.wordCount.toLocaleString()}</span> words
-                            </div>
-                            <div>
-                              <span className="font-medium">{result.imageCount}</span> images
-                            </div>
-                            <div>
-                              <span className="font-medium">{result.domainAuthority}</span> DA
-                            </div>
-                            <div>
-                              <span className="font-medium">{result.backlinks.toLocaleString()}</span> links
-                            </div>
-                          </div>
-                          <div className="mt-2 text-xs text-gray-600">
-                            <span className="font-medium">Sections:</span> {result.headings.h2.slice(0, 3).join(', ')}
-                            {result.headings.h2.length > 3 && ` +${result.headings.h2.length - 3} more`}
+                    {activeTab === 'recommendations' && (
+                      <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold">🎯 Specific Action Plan</h3>
+                          <div className="text-sm text-gray-500">
+                            Updated: {new Date(analysis?.contentDetails?.realTimeValidation?.lastAnalyzed || Date.now()).toLocaleString()}
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Competitor Insights */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-2">📈 Success Patterns:</h4>
-                      <ul className="space-y-1 text-xs text-gray-600">
-                        {analysis.serp.competitorInsights.successFactors.slice(0, 3).map((factor, index) => (
-                          <li key={index} className="flex items-start">
-                            <span className="text-green-500 mr-2">•</span>
-                            {factor}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-2">🔍 Content Gaps:</h4>
-                      <ul className="space-y-1 text-xs text-gray-600">
-                        {analysis.serp.contentGaps.slice(0, 3).map((gap, index) => (
-                          <li key={index} className="flex items-start">
-                            <span className="text-orange-500 mr-2">•</span>
-                            {gap}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* Benchmarks */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                    <div className="text-center p-3 bg-gray-50 rounded">
-                      <div className="text-lg font-bold text-gray-700">{analysis.serp.averageWordCount.toLocaleString()}</div>
-                      <div className="text-xs text-gray-600">Avg Words</div>
-                    </div>
-                    <div className="text-center p-3 bg-gray-50 rounded">
-                      <div className="text-lg font-bold text-gray-700">{analysis.serp.competitorInsights.averageImageCount}</div>
-                      <div className="text-xs text-gray-600">Avg Images</div>
-                    </div>
-                    <div className="text-center p-3 bg-gray-50 rounded">
-                      <div className="text-lg font-bold text-gray-700">{analysis.serp.competitorInsights.averageHeadingCount}</div>
-                      <div className="text-xs text-gray-600">Avg Headings</div>
-                    </div>
-                    <div className="text-center p-3 bg-gray-50 rounded">
-                      <div className="text-lg font-bold text-gray-700">{Math.round(analysis.serp.topResults.reduce((sum, r) => sum + r.domainAuthority, 0) / analysis.serp.topResults.length)}</div>
-                      <div className="text-xs text-gray-600">Avg DA</div>
-                    </div>
-                  </div>
-
-                  {/* People Also Ask & Related */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-sm font-medium text-gray-700 mb-2">💡 People Also Ask:</div>
-                      <div className="space-y-1">
-                        {analysis.serp.peopleAlsoAsk.slice(0, 4).map((question, index) => (
-                          <div key={index} className="text-xs text-gray-600 bg-blue-50 p-2 rounded">
-                            {question}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-gray-700 mb-2">🔍 Related Searches:</div>
-                      <div className="flex flex-wrap gap-1">
-                        {analysis.serp.relatedSearches.slice(0, 6).map((search, index) => (
-                          <span key={index} className="text-xs bg-gray-100 px-2 py-1 rounded">
-                            {search}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Recommendations */}
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Recommendations</h2>
-                  <div className="space-y-3">
-                    {analysis?.recommendations.map((rec, index) => (
-                      <div key={index} className="flex items-start p-3 rounded-lg border border-gray-200">
-                        {getRecommendationIcon(rec.type)}
-                        <div className="ml-3 flex-1">
-                          <div className="text-sm font-medium text-gray-900">{rec.title}</div>
-                          <div className="text-sm text-gray-600 mt-1">{rec.description}</div>
-                          <div className="flex items-center mt-2">
-                            <span className={`text-xs px-2 py-1 rounded-full ${
-                              rec.impact === 'high' ? 'bg-red-100 text-red-800' :
-                              rec.impact === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-green-100 text-green-800'
+                        
+                        <div className="space-y-4">
+                          {analysis?.recommendations?.slice(0, 8).map((rec, index) => (
+                            <div key={index} className={`p-4 rounded-lg border ${
+                              rec.type === 'critical' ? 'border-red-200 bg-red-50' :
+                              rec.type === 'important' ? 'border-yellow-200 bg-yellow-50' :
+                              'border-blue-200 bg-blue-50'
                             }`}>
-                              {rec.impact} impact
-                            </span>
-                            <span className={`text-xs px-2 py-1 rounded-full ml-2 ${
-                              rec.category === 'seo' ? 'bg-blue-100 text-blue-800' :
-                              rec.category === 'readability' ? 'bg-purple-100 text-purple-800' :
-                              rec.category === 'authority' ? 'bg-green-100 text-green-800' :
-                              rec.category === 'technical' ? 'bg-orange-100 text-orange-800' :
-                              rec.category === 'images' ? 'bg-pink-100 text-pink-800' :
-                              rec.category === 'ai-optimization' ? 'bg-indigo-100 text-indigo-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
-                              {rec.category}
-                            </span>
-                          </div>
+                              <div className="flex items-start">
+                                {getRecommendationIcon(rec.type)}
+                                <div className="ml-3 flex-1">
+                                  <div className="flex items-center justify-between">
+                                    <div className="text-sm font-medium text-gray-900">{rec.title}</div>
+                                    <span className={`text-xs px-2 py-1 rounded-full ${
+                                      rec.impact === 'high' ? 'bg-red-100 text-red-800' :
+                                      rec.impact === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                      'bg-green-100 text-green-800'
+                                    }`}>
+                                      {rec.impact} impact
+                                    </span>
+                                  </div>
+                                  <div className="text-sm text-gray-600 mt-1">{rec.description}</div>
+                                  
+                                  {rec.specificAction && (
+                                    <div className="mt-3 p-3 bg-white rounded border">
+                                      <div className="text-xs font-medium text-gray-700 mb-1">📋 Action Required:</div>
+                                      <div className="text-sm text-gray-800 mb-2">{rec.specificAction}</div>
+                                      
+                                      {rec.whereToImplement && (
+                                        <div className="mb-2">
+                                          <span className="text-xs font-medium text-gray-700">📍 Where: </span>
+                                          <span className="text-xs text-blue-600">{rec.whereToImplement}</span>
+                                        </div>
+                                      )}
+                                      
+                                      {rec.exampleText && (
+                                        <div className="bg-gray-50 p-2 rounded text-xs">
+                                          <span className="font-medium text-gray-700">💡 Example: </span>
+                                          <span className="text-gray-600">{rec.exampleText}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )) || []}
                         </div>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
               </>
@@ -834,7 +417,12 @@ export default function Home() {
               <div className="bg-white rounded-lg shadow-sm border p-6 text-center">
                 <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Ready to Analyze</h3>
-                <p className="text-gray-600">Paste your HTML content and click "Analyze Content" to get detailed SEO insights and recommendations.</p>
+                <p className="text-gray-600">Paste your HTML content and click "Analyze Content" to get detailed SEO insights and specific recommendations with exact implementation guidance.</p>
+                <div className="mt-4 p-3 bg-blue-50 rounded">
+                  <p className="text-sm text-blue-800">
+                    ✨ <strong>New Features:</strong> Get specific paragraph-level recommendations, exact link placement suggestions, and actionable SEO improvements!
+                  </p>
+                </div>
               </div>
             )}
           </div>

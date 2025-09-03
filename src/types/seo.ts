@@ -191,6 +191,7 @@ export interface SEOAnalysisResult {
   socialPreview: SocialPreview;
   score: SEOScore;
   recommendations: Recommendation[];
+  contentDetails: ContentAnalysisDetail;
 }
 
 export interface Recommendation {
@@ -199,6 +200,49 @@ export interface Recommendation {
   title: string;
   description: string;
   impact: 'high' | 'medium' | 'low';
+  specificAction?: string;
+  whereToImplement?: string;
+  exampleText?: string;
+  targetElement?: string;
+  position?: 'beginning' | 'middle' | 'end' | 'after-paragraph' | 'in-heading';
+}
+
+export interface ContentAnalysisDetail {
+  paragraphs: {
+    index: number;
+    text: string;
+    wordCount: number;
+    readabilityScore: number;
+    hasKeyword: boolean;
+    suggestions: string[];
+    needsImprovement: boolean;
+    linkOpportunities: {
+      type: 'internal' | 'external';
+      suggestedAnchor: string;
+      suggestedTarget: string;
+      reason: string;
+    }[];
+  }[];
+  headings: {
+    level: number;
+    text: string;
+    hasKeyword: boolean;
+    suggestions: string[];
+    index: number;
+  }[];
+  sentences: {
+    text: string;
+    length: number;
+    complexity: 'simple' | 'moderate' | 'complex';
+    paragraphIndex: number;
+    needsSimplification: boolean;
+  }[];
+  realTimeValidation: {
+    isAnalyzing: boolean;
+    dataSource: 'live-analysis' | 'cached' | 'simulated';
+    lastAnalyzed: string;
+    confidence: number;
+  };
 }
 
 export interface AnalysisInput {
